@@ -1,32 +1,62 @@
-import throttle from 'lodash.throttle';
+const throttler = require('lodash.throttle');
 
-const form = document.querySelector('.feedback-form');
-const email = document.querySelector('input');
-const message = document.querySelector('textarea');
-const LOCALSTORAGE_KEY = 'feedback-form-state';
-const elements = {};
+const refs = {
+  feedbackFormEl: document.querySelector('.feedback-form'),
+  inputEmailEl: document.querySelector('input[name=email]'),
+  textareaEl: document.querySelector('textarea[name=message]'),
+};
 
-form.addEventListener(
+let feedbackFormObject = {};
+
+refs.feedbackFormEl.addEventListener(
   'input',
-  throttle(e => {
-    elements[e.target.name] = e.target.value;
-    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(elements));
-  }, 500)
+  throttler(onFeedbackFormInput, 500)
 );
 
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  e.currentTarget.reset();
-  localStorage.removeItem(LOCALSTORAGE_KEY);
-  console.log(elements);
-});
+function onFeedbackFormInput(e) {
+  feedbackFormObject[e.target.name] = e.target.value;
 
-function autofill() {
-  const savedElements = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY));
-  if (savedElements) {
-    email.value = savedElements.email || '';
-    message.value = savedElements.message || '';
+  let localStorageObject = JSON.stringify(feedbackFormObject);
+  localStorage.setItem('feedback-form-state', localStorageObject);
+}
+
+window.addEventListener('load', onFeedbackFormReplay);
+
+function onFeedbackFormReplay() {
+  if (!localStorage.getItem('feedback-form-state')) {
+    return;
+  }
+
+  let parsedLocalStorageObject = JSON.parse(
+    localStorage.getItem('feedback-form-state')
+  );
+
+  if (parsedLocalStorageObject.email) {
+    feedbackFormObject.email = parsedLocalStorageObject.email;
+    refs.inputEmailEl.value = parsedLocalStorageObject.email;
+  }
+
+  if (parsedLocalStorageObject.message) {
+    feedbackFormObject.message = parsedLocalStorageObject.message;
+    refs.textareaEl.value = parsedLocalStorageObject.message;
   }
 }
 
-autofill();
+refs.feedbackFormEl.addEventListener('submit', onFeedbackFormReset);
+
+function onFeedbackFormReset(e) {
+  e.preventDefault();
+
+  let parsedLocalStorageObject = JSON.parse(
+    localStorage.getItem('feedback-form-state')
+  );
+
+  if (parsedLocalStorageObject) {
+    console.log(parsedLocalStorageObject);
+  }
+
+  refs.feedbackFormEl.reset();
+  localStorage.removeItem('feedback-form-state');
+  feedbackFormObject = {};
+}
+
