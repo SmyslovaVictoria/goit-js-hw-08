@@ -51,12 +51,16 @@ function onFeedbackFormReset(e) {
     localStorage.getItem('feedback-form-state')
   );
 
-  if (parsedLocalStorageObject) {
-    console.log(parsedLocalStorageObject);
+  if (
+    parsedLocalStorageObject.message.value === '' ||
+    parsedLocalStorageObject.email.value === ''
+  ) {
+    return alert('Please fill in all the fields!');
+    // console.log(parsedLocalStorageObject);
   }
 
   refs.feedbackFormEl.reset();
   localStorage.removeItem('feedback-form-state');
   feedbackFormObject = {};
 }
-
+console.log(parsedLocalStorageObject);
