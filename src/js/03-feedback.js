@@ -18,7 +18,9 @@ form.addEventListener(
 
 form.addEventListener('submit', e => {
   e.preventDefault();
-
+  if (e.value === '') {
+    return alert('Please fill in all the fields!');
+  }
   e.currentTarget.reset();
   localStorage.removeItem(LOCALSTORAGE_KEY);
   console.log(elements);
